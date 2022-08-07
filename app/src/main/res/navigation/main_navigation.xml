@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main_navigation"
+    app:startDestination="@id/webViewFragment">
+
+
+    <fragment
+        android:id="@+id/startFragment"
+        android:name="com.example.webviewapp.ui.StartFragment"
+        android:label="fragment_start"
+        tools:layout="@layout/fragment_start" >
+        <action
+            android:id="@+id/action_startFragment_to_noInternetFragment"
+            app:destination="@id/noInternetFragment"
+            app:popUpTo="@+id/startFragment"
+            app:popUpToInclusive="true"/>
+        <action
+            android:id="@+id/action_startFragment_to_webViewFragment"
+            app:destination="@id/webViewFragment"
+            app:popUpTo="@+id/startFragment"
+            app:popUpToInclusive="true"/>
+    </fragment>
+    <fragment
+        android:id="@+id/webViewFragment"
+        android:name="com.example.webviewapp.ui.WebViewFragment"
+        android:label="fragment_web_view"
+        tools:layout="@layout/fragment_web_view" >
+        <action
+            android:id="@+id/action_webViewFragment_to_noInternetFragment"
+            app:destination="@id/noInternetFragment"
+            app:popUpTo="@+id/webViewFragment"
+            app:popUpToInclusive="true"/>
+    </fragment>
+    <fragment
+        android:id="@+id/noInternetFragment"
+        android:name="com.example.webviewapp.ui.NoInternetFragment"
+        android:label="fragment_no_internet"
+        tools:layout="@layout/fragment_no_internet" >
+        <action
+            android:id="@+id/action_noInternetFragment_to_webViewFragment"
+            app:destination="@id/webViewFragment"
+            app:popUpTo="@+id/noInternetFragment"
+            app:popUpToInclusive="true"/>
+    </fragment>
+</navigation>
