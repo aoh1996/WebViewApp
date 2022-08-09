@@ -4,17 +4,16 @@ import android.content.Context
 import android.net.ConnectivityManager
 import android.net.Network
 import android.net.NetworkRequest
-import android.os.Build
 import android.util.Log
-import androidx.annotation.RequiresApi
 import androidx.lifecycle.LiveData
-import kotlin.math.log
 
 private const val TAG = "monitor"
 
-class NetworkConnectionMonitor (private val connectivityManager: ConnectivityManager) : LiveData<Boolean>() {
+class NetworkConnectionMonitor(private val connectivityManager: ConnectivityManager) :
+    LiveData<Boolean>() {
 
-    private constructor(application: Application) : this(application.getSystemService(Context.CONNECTIVITY_SERVICE) as  ConnectivityManager)
+    private constructor(application: Application) : this(application.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager)
+
     private val networkCallback = object : ConnectivityManager.NetworkCallback() {
 
         override fun onAvailable(network: Network) {
@@ -22,6 +21,7 @@ class NetworkConnectionMonitor (private val connectivityManager: ConnectivityMan
             Log.d(TAG, "onAvailable: true")
             postValue(true)
         }
+
         override fun onLost(network: Network) {
             super.onLost(network)
             Log.d(TAG, "onLost: true")
@@ -41,7 +41,7 @@ class NetworkConnectionMonitor (private val connectivityManager: ConnectivityMan
         super.onActive()
         val builder = NetworkRequest.Builder()
         postValue(false)
-        connectivityManager.registerNetworkCallback(builder.build(),networkCallback)
+        connectivityManager.registerNetworkCallback(builder.build(), networkCallback)
     }
 
     override fun onInactive() {
@@ -52,7 +52,8 @@ class NetworkConnectionMonitor (private val connectivityManager: ConnectivityMan
 
     companion object {
 
-        @Volatile private var INSTANCE: NetworkConnectionMonitor? = null
+        @Volatile
+        private var INSTANCE: NetworkConnectionMonitor? = null
 
         fun getInstance(application: Application): NetworkConnectionMonitor {
             Log.d(TAG, "getInstance: called")

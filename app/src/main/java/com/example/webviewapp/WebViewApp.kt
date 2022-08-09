@@ -3,6 +3,7 @@ package com.example.webviewapp
 import NetworkConnectionMonitor
 import android.app.Application
 import com.appsflyer.AppsFlyerLib
+import com.example.webviewapp.util.HistoryManager
 import com.onesignal.OneSignal
 
 private const val ONESIGNAL_APP_ID = "303ecb33-bba5-4973-a6b2-2887a3536287"
@@ -26,5 +27,9 @@ class WebViewApp : Application() {
         AppsFlyerLib.getInstance().start(this)
 
         super.onCreate()
+    }
+
+    fun getHistoryManager(): HistoryManager {
+        return HistoryManager.getInstance(this)
     }
 }

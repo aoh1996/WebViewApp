@@ -3,15 +3,20 @@ package com.example.webviewapp.ui
 import android.annotation.SuppressLint
 import android.content.SharedPreferences
 import android.os.Bundle
-import android.view.KeyEvent
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
+import com.example.webviewapp.WebViewApp
 import com.example.webviewapp.databinding.FragmentWebViewBinding
+import com.example.webviewapp.util.HistoryManager
+
+private const val BASE_URL = "https://google.com"
 
 class WebViewFragment : Fragment() {
 
@@ -19,10 +24,26 @@ class WebViewFragment : Fragment() {
     private val binding get() = _binding!!
     private lateinit var prefs: SharedPreferences
     private lateinit var webView: WebView
-    private var url = ""
+    private lateinit var historyManager: HistoryManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        historyManager = (requireActivity().application as WebViewApp).getHistoryManager()
+        historyManager.load()
+
+
+        activity?.onBackPressedDispatcher?.addCallback(this, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+
+                val previousUrl = historyManager.getPreviuosUrl()
+                if (previousUrl.isBlank()) {
+                    requireActivity().finish()
+                } else {
+                    webView.loadUrl(previousUrl)
+                }
+            }
+        })
+
         prefs = requireActivity().getSharedPreferences(
             "com.example.webviewapp",
             AppCompatActivity.MODE_PRIVATE
@@ -37,51 +58,39 @@ class WebViewFragment : Fragment() {
     ): View {
         _binding = FragmentWebViewBinding.inflate(inflater, container, false)
 
-        url = prefs.getString("url", "https://google.com")!!
-
         webView = binding.webView
-        if (savedInstanceState != null)
-            webView.restoreState(savedInstanceState);
-        else
-            webView.loadUrl(url)
+
+        if (historyManager.currentUrl.isBlank()) {
+            webView.loadUrl(BASE_URL)
+
+        } else {
+            Log.d("webfrag", "new WebView")
+            webView.loadUrl(historyManager.currentUrl)
+        }
 
         webView.settings.javaScriptEnabled = true
-        webView.webViewClient = MyWebViewClient(prefs)
+        webView.webViewClient = MyWebViewClient(historyManager)
 
-        webView.setOnKeyListener(View.OnKeyListener { _, keyCode, keyEvent ->
-
-            if (keyEvent.action == KeyEvent.ACTION_DOWN) {
-                if (keyCode == KeyEvent.KEYCODE_BACK) {
-                    if (webView.canGoBack()) {
-                        webView.goBack()
-                    } else {
-                        requireActivity().finish()
-                    }
-                }
-            }
-            return@OnKeyListener true
-        })
         val view = binding.root
         return view
     }
 
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
+    override fun onStop() {
+        historyManager.saveAll()
+        super.onStop()
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
-
-        webView.saveState(outState)
+        historyManager.saveAll()
         super.onSaveInstanceState(outState)
     }
 
-    private class MyWebViewClient(val prefs: SharedPreferences) : WebViewClient() {
+    private class MyWebViewClient(val historyManager: HistoryManager) : WebViewClient() {
 
 
         @SuppressLint("CommitPrefEdits")
         override fun doUpdateVisitedHistory(view: WebView?, url: String?, isReload: Boolean) {
-            prefs.edit().putString("url", url).apply()
+            historyManager.addToHistory(url)
             super.doUpdateVisitedHistory(view, url, isReload)
         }
     }
